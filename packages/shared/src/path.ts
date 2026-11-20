@@ -168,6 +168,17 @@ export function isAbsolutePath(value: string): boolean {
   return value.startsWith("/") || isWindowsAbsolutePath(value);
 }
 
+// NTFS reaches .git through trailing dots/spaces, stream suffixes and GIT~1; compare uppercased names.
+export function isGitMetadataName(segment: string): boolean {
+  const name = (segment.split(":")[0] ?? "").replace(/[. ]+$/, "").toUpperCase();
+  return name === ".GIT" || name === "GIT~1";
+}
+
+/** Workspace writes refuse these, so editors must not offer to save them. */
+export function isGitMetadataPath(value: string): boolean {
+  return value.split(/[/\\]/).some(isGitMetadataName);
+}
+
 /** Both ~/ and ~\ home prefixes are expanded by the destination server. */
 export function isHostPath(value: string): boolean {
   return isAbsolutePath(value) || value.startsWith("~/") || value.startsWith("~\\");

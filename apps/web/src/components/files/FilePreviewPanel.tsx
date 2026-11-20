@@ -75,7 +75,7 @@ import { PREFERRED_HIGHLIGHTER } from "~/lib/syntaxHighlighting";
 import { cn, isMacPlatform } from "~/lib/utils";
 import { requestWorkspaceFocus } from "~/lib/workspaceFocus";
 import type { ChatFileAttachment } from "~/types";
-import { isHostPath } from "@t3tools/shared/path";
+import { isGitMetadataPath, isHostPath } from "@t3tools/shared/path";
 import { resolvePathLinkTarget } from "@t3tools/shared/fileLinks";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { stackedThreadToast, toastManager } from "~/components/ui/toast";
@@ -1273,6 +1273,7 @@ export default function FilePreviewPanel({
   const fileAccess = useFilesystemReadAccess(environmentId, m);
   const { canReadFiles } = fileAccess;
   const canWriteFiles = useEnvironmentScope(environmentId, AuthFilesystemWriteScope);
+  const isGitMetadataFile = relativePath !== null && isGitMetadataPath(relativePath);
   const file = useProjectFileQuery(
     environmentId,
     cwd,
@@ -1366,6 +1367,7 @@ export default function FilePreviewPanel({
   const mayOpenEditor =
     previewPath !== null &&
     !isHostFile &&
+    !isGitMetadataFile &&
     canWriteFiles &&
     file.error === null &&
     !file.data?.truncated &&
@@ -1793,7 +1795,7 @@ export default function FilePreviewPanel({
                 threadRef={threadRef}
                 contents={file.data.contents}
                 workspaceMutationId={workspaceMutationId}
-                readOnly={file.data.truncated || isHostFile || !canWriteFiles}
+                readOnly={file.data.truncated || isHostFile || isGitMetadataFile || !canWriteFiles}
                 onPendingChange={onPendingChange}
               />
             ) : tableDelimiter && renderTable ? (
@@ -1803,7 +1805,7 @@ export default function FilePreviewPanel({
                 text={file.data.contents}
                 delimiter={tableDelimiter}
               />
-            ) : file.data.truncated || isHostFile || !canWriteFiles ? (
+            ) : file.data.truncated || isHostFile || isGitMetadataFile || !canWriteFiles ? (
               <SourceFilePreview
                 name={relativePath}
                 text={file.data.contents}

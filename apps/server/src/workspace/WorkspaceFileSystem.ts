@@ -13,7 +13,7 @@ import type {
 } from "@t3tools/contracts";
 import { expandHomePath } from "@t3tools/provider-core/server/pathExpansion";
 import * as HostProcess from "@t3tools/shared/HostProcess";
-import { isNetworkPath } from "@t3tools/shared/path";
+import { isGitMetadataName, isNetworkPath } from "@t3tools/shared/path";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
@@ -30,12 +30,6 @@ import { fileHeaderMimeType } from "./fileHeaderMimeType.ts";
 import { toHostDrivePath } from "./hostDrivePath.ts";
 
 const PROJECT_READ_FILE_MAX_BYTES = 1024 * 1024;
-
-// NTFS reaches .git through trailing dots/spaces, stream suffixes and GIT~1; compare uppercased names.
-const isGitMetadataName = (segment: string) => {
-  const name = (segment.split(":")[0] ?? "").replace(/[. ]+$/, "").toUpperCase();
-  return name === ".GIT" || name === "GIT~1";
-};
 
 export class WorkspaceFileSystemOperationError extends Schema.TaggedError<WorkspaceFileSystemOperationError>()(
   "WorkspaceFileSystemOperationError",
